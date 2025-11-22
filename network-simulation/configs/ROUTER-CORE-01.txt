@@ -1,0 +1,179 @@
+! ========================================
+! Core Router 1 Configuration
+! Device: Core-Router-01
+! Purpose: Core routing and gateway redundancy
+! ========================================
+
+hostname Core-Router-01
+
+! ========================================
+! Basic Configuration
+! ========================================
+enable secret 5 $1$mERr$hx5rVt7rPNoS4wqbXKX7m0
+service password-encryption
+no ip domain-lookup
+ip domain-name cruise.local
+
+! ========================================
+! Interface Configuration
+! ========================================
+
+! VLAN 20 - Crew/Admin Network
+interface GigabitEthernet0/0
+ description Crew/Admin Network - VLAN 20
+ ip address 10.20.20.1 255.255.255.0
+ no shutdown
+
+! VLAN 30 - Engineering Systems
+interface GigabitEthernet0/1
+ description Engineering Systems - VLAN 30
+ ip address 10.30.30.1 255.255.255.0
+ no shutdown
+
+! VLAN 40 - Navigation Support
+interface GigabitEthernet0/2
+ description Navigation Support - VLAN 40
+ ip address 10.40.40.1 255.255.255.0
+ no shutdown
+
+! VLAN 50 - Hotel Operations
+interface GigabitEthernet0/3
+ description Hotel Operations - VLAN 50
+ ip address 10.50.50.1 255.255.255.0
+ no shutdown
+
+! Link to Core Router 2 (for redundancy)
+interface GigabitEthernet0/4
+ description Link to Core-Router-02
+ ip address 10.100.100.1 255.255.255.252
+ no shutdown
+
+! Internet Gateway (Port Mode)
+interface GigabitEthernet0/5
+ description Internet Gateway - Port Mode
+ ip address 192.168.1.2 255.255.255.0
+ no shutdown
+
+! ========================================
+! HSRP Configuration
+! ========================================
+
+! HSRP for VLAN 20
+interface GigabitEthernet0/0
+ standby 20 ip 10.20.20.1
+ standby 20 priority 110
+ standby 20 preempt
+ standby 20 name HSRP-VLAN20
+
+! HSRP for VLAN 30
+interface GigabitEthernet0/1
+ standby 30 ip 10.30.30.1
+ standby 30 priority 110
+ standby 30 preempt
+ standby 30 name HSRP-VLAN30
+
+! HSRP for VLAN 40
+interface GigabitEthernet0/2
+ standby 40 ip 10.40.40.1
+ standby 40 priority 110
+ standby 40 preempt
+ standby 40 name HSRP-VLAN40
+
+! HSRP for VLAN 50
+interface GigabitEthernet0/3
+ standby 50 ip 10.50.50.1
+ standby 50 priority 110
+ standby 50 preempt
+ standby 50 name HSRP-VLAN50
+
+! ========================================
+! OSPF Configuration
+! ========================================
+router ospf 1
+ router-id 10.20.20.1
+ network 10.20.20.0 0.0.0.255 area 0
+ network 10.30.30.0 0.0.0.255 area 0
+ network 10.40.40.0 0.0.0.255 area 0
+ network 10.50.50.0 0.0.0.255 area 0
+ network 10.100.100.0 0.0.0.3 area 0
+ passive-interface GigabitEthernet0/5
+
+! ========================================
+! Default Route
+! ========================================
+ip route 0.0.0.0 0.0.0.0 192.168.1.1
+
+! ========================================
+! Access Control Lists
+! ========================================
+
+! ACL for VLAN 20 (Crew/Admin)
+ip access-list extended VLAN20-OUTBOUND
+ permit ip 10.20.20.0 0.0.0.255 10.30.30.0 0.0.0.255
+ permit ip 10.20.20.0 0.0.0.255 10.40.40.0 0.0.0.255
+ permit ip 10.20.20.0 0.0.0.255 10.50.50.0 0.0.0.255
+ permit tcp 10.20.20.0 0.0.0.255 any eq 80
+ permit tcp 10.20.20.0 0.0.0.255 any eq 443
+ permit udp 10.20.20.0 0.0.0.255 any eq 53
+ permit udp 10.20.20.0 0.0.0.255 any eq 123
+ deny ip any any
+
+! ACL for VLAN 30 (Engineering) - No Internet
+ip access-list extended VLAN30-OUTBOUND
+ permit ip 10.30.30.0 0.0.0.255 10.20.20.0 0.0.0.255
+ deny ip any any
+
+! ACL for VLAN 40 (Navigation) - No Internet
+ip access-list extended VLAN40-OUTBOUND
+ permit ip 10.40.40.0 0.0.0.255 10.20.20.0 0.0.0.255
+ deny ip any any
+
+! ACL for VLAN 50 (Hotel)
+ip access-list extended VLAN50-OUTBOUND
+ permit ip 10.50.50.0 0.0.0.255 10.20.20.0 0.0.0.255
+ permit tcp 10.50.50.0 0.0.0.255 any eq 80
+ permit tcp 10.50.50.0 0.0.0.255 any eq 443
+ deny ip any any
+
+! Apply ACLs to interfaces
+interface GigabitEthernet0/0
+ ip access-group VLAN20-OUTBOUND out
+
+interface GigabitEthernet0/1
+ ip access-group VLAN30-OUTBOUND out
+
+interface GigabitEthernet0/2
+ ip access-group VLAN40-OUTBOUND out
+
+interface GigabitEthernet0/3
+ ip access-group VLAN50-OUTBOUND out
+
+! ========================================
+! Logging
+! ========================================
+logging buffered 4096
+logging console
+logging monitor
+
+! ========================================
+! Line Configuration
+! ========================================
+line con 0
+ logging synchronous
+ exec-timeout 5 0
+ password 7 094F471A1A0A
+ login
+
+line vty 0 4
+ logging synchronous
+ exec-timeout 5 0
+ password 7 094F471A1A0A
+ login
+ transport input ssh
+
+! ========================================
+! End of Configuration
+! ========================================
+end
+write memory
+

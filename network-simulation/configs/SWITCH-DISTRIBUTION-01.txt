@@ -1,0 +1,228 @@
+! ========================================
+! Distribution Switch 1 Configuration
+! Device: Distribution-Switch-01
+! Purpose: Layer 3 distribution switch for VLAN routing
+! ========================================
+
+hostname Distribution-Switch-01
+
+! ========================================
+! Basic Configuration
+! ========================================
+enable secret 5 $1$mERr$hx5rVt7rPNoS4wqbXKX7m0
+service password-encryption
+no ip domain-lookup
+ip domain-name cruise.local
+
+! ========================================
+! VLAN Configuration
+! ========================================
+vlan 10
+ name Guest-WiFi
+vlan 20
+ name Crew-Admin
+vlan 30
+ name Engineering-Systems
+vlan 40
+ name Navigation-Support
+vlan 50
+ name Hotel-Operations
+
+! ========================================
+! Interface Configuration
+! ========================================
+
+! Trunk to Core Router 1
+interface GigabitEthernet0/1
+ description Trunk to Core-Router-01
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+ no shutdown
+
+! Trunk to Core Router 2 (redundancy)
+interface GigabitEthernet0/2
+ description Trunk to Core-Router-02
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+ no shutdown
+
+! Trunk to Distribution Switch 2
+interface GigabitEthernet0/3
+ description Trunk to Distribution-Switch-02
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+ channel-group 1 mode active
+ no shutdown
+
+! Link Aggregation (LACP)
+interface Port-channel1
+ description LAG to Distribution-Switch-02
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+ no shutdown
+
+! Access ports for VLAN 20 (Crew/Admin)
+interface range GigabitEthernet0/10-15
+ description Crew/Admin Workstations
+ switchport mode access
+ switchport access vlan 20
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation shutdown
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ no shutdown
+
+! Access ports for VLAN 30 (Engineering)
+interface range GigabitEthernet0/16-20
+ description Engineering Systems
+ switchport mode access
+ switchport access vlan 30
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation shutdown
+ spanning-tree portfast
+ no shutdown
+
+! Access ports for VLAN 40 (Navigation)
+interface range GigabitEthernet0/21-25
+ description Navigation Systems
+ switchport mode access
+ switchport access vlan 40
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation shutdown
+ spanning-tree portfast
+ no shutdown
+
+! Access ports for VLAN 50 (Hotel)
+interface range GigabitEthernet0/26-30
+ description Hotel Operations
+ switchport mode access
+ switchport access vlan 50
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation shutdown
+ spanning-tree portfast
+ no shutdown
+
+! ========================================
+! Layer 3 Configuration (if Layer 3 switch)
+! ========================================
+ip routing
+
+! VLAN 20 Interface
+interface Vlan20
+ description Crew/Admin Network
+ ip address 10.20.20.2 255.255.255.0
+ no shutdown
+
+! VLAN 30 Interface
+interface Vlan30
+ description Engineering Systems
+ ip address 10.30.30.2 255.255.255.0
+ no shutdown
+
+! VLAN 40 Interface
+interface Vlan40
+ description Navigation Support
+ ip address 10.40.40.2 255.255.255.0
+ no shutdown
+
+! VLAN 50 Interface
+interface Vlan50
+ description Hotel Operations
+ ip address 10.50.50.2 255.255.255.0
+ no shutdown
+
+! ========================================
+! OSPF Configuration
+! ========================================
+router ospf 1
+ router-id 10.20.20.2
+ network 10.20.20.0 0.0.0.255 area 0
+ network 10.30.30.0 0.0.0.255 area 0
+ network 10.40.40.0 0.0.0.255 area 0
+ network 10.50.50.0 0.0.0.255 area 0
+
+! ========================================
+! HSRP Configuration (for redundancy)
+! ========================================
+interface Vlan20
+ standby 20 ip 10.20.20.1
+ standby 20 priority 100
+ standby 20 preempt
+
+interface Vlan30
+ standby 30 ip 10.30.30.1
+ standby 30 priority 100
+ standby 30 preempt
+
+interface Vlan40
+ standby 40 ip 10.40.40.1
+ standby 40 priority 100
+ standby 40 preempt
+
+interface Vlan50
+ standby 50 ip 10.50.50.1
+ standby 50 priority 100
+ standby 50 preempt
+
+! ========================================
+! Spanning Tree Configuration
+! ========================================
+spanning-tree mode rapid-pvst
+spanning-tree portfast default
+spanning-tree portfast bpduguard default
+
+! Root bridge priority (lower = higher priority)
+spanning-tree vlan 20 priority 4096
+spanning-tree vlan 30 priority 4096
+spanning-tree vlan 40 priority 4096
+spanning-tree vlan 50 priority 4096
+
+! ========================================
+! DHCP Snooping
+! ========================================
+ip dhcp snooping
+ip dhcp snooping vlan 20,30,40,50
+
+! Trust uplinks
+interface GigabitEthernet0/1
+ ip dhcp snooping trust
+
+interface GigabitEthernet0/2
+ ip dhcp snooping trust
+
+interface Port-channel1
+ ip dhcp snooping trust
+
+! ========================================
+! Logging
+! ========================================
+logging buffered 4096
+logging console
+logging monitor
+
+! ========================================
+! Line Configuration
+! ========================================
+line con 0
+ logging synchronous
+ exec-timeout 5 0
+ password 7 094F471A1A0A
+ login
+
+line vty 0 4
+ logging synchronous
+ exec-timeout 5 0
+ password 7 094F471A1A0A
+ login
+ transport input ssh
+
+! ========================================
+! End of Configuration
+! ========================================
+end
+write memory
+

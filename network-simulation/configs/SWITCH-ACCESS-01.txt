@@ -1,0 +1,144 @@
+! ========================================
+! Access Switch 1 Configuration
+! Device: Access-Switch-01
+! Purpose: Layer 2 access switch for end devices
+! ========================================
+
+hostname Access-Switch-01
+
+! ========================================
+! Basic Configuration
+! ========================================
+enable secret 5 $1$mERr$hx5rVt7rPNoS4wqbXKX7m0
+service password-encryption
+no ip domain-lookup
+ip domain-name cruise.local
+
+! ========================================
+! VLAN Configuration
+! ========================================
+vlan 20
+ name Crew-Admin
+vlan 30
+ name Engineering-Systems
+vlan 40
+ name Navigation-Support
+vlan 50
+ name Hotel-Operations
+
+! ========================================
+! Interface Configuration
+! ========================================
+
+! Uplink to Distribution Switch (Trunk)
+interface GigabitEthernet0/1
+ description Uplink to Distribution-Switch-01
+ switchport mode trunk
+ switchport trunk allowed vlan 20,30,40,50
+ no shutdown
+
+! Redundant Uplink (if available)
+interface GigabitEthernet0/2
+ description Uplink to Distribution-Switch-02
+ switchport mode trunk
+ switchport trunk allowed vlan 20,30,40,50
+ no shutdown
+
+! Access Ports - VLAN 20 (Crew/Admin)
+interface range FastEthernet0/1-12
+ description Crew/Admin Workstations
+ switchport mode access
+ switchport access vlan 20
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation shutdown
+ switchport port-security mac-address sticky
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ no shutdown
+
+! Access Ports - VLAN 30 (Engineering)
+interface range FastEthernet0/13-18
+ description Engineering Systems
+ switchport mode access
+ switchport access vlan 30
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation shutdown
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ no shutdown
+
+! Access Ports - VLAN 40 (Navigation)
+interface range FastEthernet0/19-22
+ description Navigation Systems
+ switchport mode access
+ switchport access vlan 40
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation shutdown
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ no shutdown
+
+! Access Ports - VLAN 50 (Hotel)
+interface range FastEthernet0/23-24
+ description Hotel Operations
+ switchport mode access
+ switchport access vlan 50
+ switchport port-security
+ switchport port-security maximum 2
+ switchport port-security violation shutdown
+ spanning-tree portfast
+ spanning-tree bpduguard enable
+ no shutdown
+
+! ========================================
+! Spanning Tree Configuration
+! ========================================
+spanning-tree mode rapid-pvst
+spanning-tree portfast default
+spanning-tree portfast bpduguard default
+
+! ========================================
+! DHCP Snooping
+! ========================================
+ip dhcp snooping
+ip dhcp snooping vlan 20,30,40,50
+
+! Trust uplinks
+interface GigabitEthernet0/1
+ ip dhcp snooping trust
+
+interface GigabitEthernet0/2
+ ip dhcp snooping trust
+
+! ========================================
+! Logging
+! ========================================
+logging buffered 4096
+logging console
+logging monitor
+
+! ========================================
+! Line Configuration
+! ========================================
+line con 0
+ logging synchronous
+ exec-timeout 5 0
+ password 7 094F471A1A0A
+ login
+
+line vty 0 4
+ logging synchronous
+ exec-timeout 5 0
+ password 7 094F471A1A0A
+ login
+ transport input ssh
+
+! ========================================
+! End of Configuration
+! ========================================
+end
+write memory
+
