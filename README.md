@@ -1,2 +1,9 @@
-# smart-ship-it-simulation
-A simulated IT infrastructure of a modern smart cruise vessel including Windows Server, network segmentation, monitoring dashboards, automation scripts, and incident scenarios.
+# 🚢 Smart Cruise Vessel IT Systems Simulation
+
+This repository simulates the IT infrastructure typically found on a modern smart cruise vessel.  
+It includes Windows Server environments, network segmentation, monitoring dashboards, automation scripts, and real-world incident handling scenarios.
+
+---
+
+## 📁 Repository Structure (Live Updating)
+
