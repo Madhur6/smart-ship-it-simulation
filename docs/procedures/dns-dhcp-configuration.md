@@ -371,5 +371,5 @@ Get-DhcpServerv4Lease -ScopeId "10.20.20.0" | Measure-Object
 
 ---
 
-**Last Updated:** 2024 | **Version:** 1.0.0 | **Status:** Active
+**Last Updated:** 2025 | **Version:** 1.0.0 | **Status:** Active
 

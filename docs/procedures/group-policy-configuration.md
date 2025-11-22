@@ -418,5 +418,5 @@ For each GPO, document:
 
 ---
 
-**Last Updated:** 2024 | **Version:** 1.0.0 | **Status:** Active
+**Last Updated:** 2025 | **Version:** 1.0.0 | **Status:** Active
 

@@ -166,7 +166,7 @@ This document outlines the monitoring and analytics infrastructure for the Smart
 **Data Structure:**
 ```json
 {
-  "timestamp": "2024-01-15T10:30:00Z",
+  "timestamp": "2025-01-15T10:30:00Z",
   "zone": "Deck-5-Cabins",
   "node_id": "LED-12345",
   "status": "on",
@@ -260,7 +260,7 @@ This document outlines the monitoring and analytics infrastructure for the Smart
 Measurement: led_power
 Tags: zone=Deck-5-Cabins, node_id=LED-12345
 Fields: power_watts=12.5, status=on
-Timestamp: 2024-01-15T10:30:00Z
+Timestamp: 2025-01-15T10:30:00Z
 ```
 
 ### **Retention Policy**
@@ -449,5 +449,5 @@ Timestamp: 2024-01-15T10:30:00Z
 
 ---
 
-**Last Updated:** 2024 | **Version:** 1.0.0 | **Status:** In Progress
+**Last Updated:** 2025 | **Version:** 1.0.0 | **Status:** In Progress
 

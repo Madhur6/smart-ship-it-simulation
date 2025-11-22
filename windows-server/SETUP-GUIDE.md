@@ -413,5 +413,5 @@ After completing Module A:
 
 ---
 
-**Last Updated:** 2024 | **Status:** Active Guide
+**Last Updated:** 2025 | **Status:** Active Guide
 

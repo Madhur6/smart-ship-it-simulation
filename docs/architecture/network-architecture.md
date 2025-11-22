@@ -491,5 +491,5 @@ This document outlines the network infrastructure design for the Smart Cruise Ve
 
 ---
 
-**Last Updated:** 2024 | **Version:** 1.0.0 | **Status:** In Progress
+**Last Updated:** 2025 | **Version:** 1.0.0 | **Status:** In Progress
 
